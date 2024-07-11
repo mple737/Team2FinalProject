@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Dashboard Final Project</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+     
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #a4a2a2;
+            color: rgb(245, 241, 241);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            height: 650px;
+            margin: 0 auto;
+            padding: 25px;
+            border: 2px solid #454343;
+            border-radius: 10px;
+            background-color: #0c0b0b;
+            display: flex;
+            
+        }
+        
+        .left-side {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            /*border-right: 2px solid #fff; get rid of this */ 
+        }
+        .content {
+            flex: 1;
+            padding: 20px;
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out, visibility 0.5s;
+            width: 100%; 
+        }
+        .content.visible {
+            visibility: visible;
+            opacity: 1;
+        }
+        .header {
+            display: flex;
+            margin-top: -20px; 
+            justify-content: space-between;
+            align-items: center;
+        }
+        .patient-vital-signss {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .patient-vital-signs {
+            background-color: #2a2a2a;
+            border-radius: 10px;
+            padding: 10px;
+            width: 18%;
+            margin: 5px;
+        }
+        
+        .patient-vital-signs h3 {
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .patient-vital-signs p {
+            margin: 5px 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .patient-vital-signs .status {
+            font-size: 12px;
+            padding: 2px 5px;
+            border-radius: 5px;
+        }
+        
+        .normal {
+            background-color: rgb(30, 116, 30);
+        }
+        .charts {
+            display: flex;
+            margin-top: 40px;
+        }
+        .chart {
+            width: 200%; 
+            height: 200px;
+            /* to handle any overflow */
+            overflow: hidden; 
+            position: relative;
+            margin-left: 7px;
+        }
+
+        .chart img {
+            width: 100%;
+            height: 97%;
+             
+            
+        }
+
+        .power-button {
+            display: block;
+            background-color: red;
+            color: white;
+            padding: 300px 20px;
+            border: none;
+            border-radius: 90px;
+            cursor: pointer; 
+            font-size: 18px;
+            /* ensure consistent width */
+            width: 100px;
+            /* center thee text */ 
+            text-align: center; 
+        }
+        .power-button.on,
+        .power-button:hover {
+            background-color: green;
+        }
+     
+        .clock {
+            margin-bottom: 70px;
+            margin-left: 100px;
+        }
+        
+
+        .info-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: -43px; 
+            margin-left: 190px;
+            
+            
+        }
+        .select-patient-dropdown,
+        .info-button {
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            padding: 10px 10px;
+            border-radius: 15px;
+            cursor: pointer;
+            margin-top: 15px;
+            margin-right: 10px;
+                        
+        }
+
+        .submit-button{
+
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            padding: 10px 10px;
+            border-radius: 15px;
+            cursor: pointer;
+            /* Moves buttons up */
+            margin-bottom: 10px;
+            /* Moves buttons to the right */
+            margin-right: 70px; 
+
+        }
+        .home-button{
+
+            background-color: #007bff;
+            color: white;
+            border-radius: 5px;
+            padding: 10px 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            margin-top: 10px;
+            margin-right: 10px; 
+           
+        }
+        
+        .select-patient-dropdown:hover,
+        .home-button:hover,
+        .submit-button:hover,
+        .info-button:hover {
+            background-color: #0056b3;
+        }
+        
+        .form {
+            display: flex;
+            flex-direction: column;
+           
+        }
+  
+        .form-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .form-group label {
+            width: 285.5px; 
+            text-align: right; 
+            margin-right: 163.9px; 
+        }
+
+        .form-group input {
+            /* using flex to make input take the remaining space */
+            flex: 1; 
+            padding: 6.5px;
+            font-size: 13px;
+            border: 3px solid #958d8d; 
+            border-radius: 2px; 
+            margin-right: 163.9px;
+            
+        }
+
+        .hide{
+            display:none;
+        }
+
+        .show{
+            display:block;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        class App extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = { 
+                    
+                    powerOn: false,
+                    button: false, 
+                    view: 'dashboard', 
+
+                    //patient default data
+                    patientData: [
+                        {
+                            id: 1,
+                            name: "John Brown",
+                            age: 30,
+                            incident: "Heart Attack",
+                            medication: "Omeprazole, Antiplatelets",
+                            weight: 160,
+                            height: "5'9",
+                            gender: "male",
+
+                            vitals: {
+                                BloodSugar: { 
+                                    
+                                value: 80, 
+                                unit: "mg/dL", 
+                                status: "Normal" 
+                            },
+                                HeartRate: { 
+                                
+                                value: 98, 
+                                unit: "bpm", 
+                                status: "Normal" 
+                            },
+
+                                BloodPressure: { 
+
+                                value: "102/72", 
+                                unit: "mmHg", 
+                                status: "Normal" 
+                            },
+                                BodyTemperature: { 
+                                    
+                                value: 99, 
+                                unit: "°F", 
+                                status: "Normal" 
+                            
+                            },
+                                RespirotoryRate: { 
+                                
+                                value: 15, 
+                                unit: "rpm", 
+                                status: "Normal" 
+                            }
+                        }
+                    },
+                        
+                ],
+                    selectedPatientId: 1,
+
+                    //updated the patient data whne user enter a new patient information
+                    newPatientsDatas: {
+                        name: "",
+                        age: "",
+                        incident: "",
+                        medication: "",
+                        vitals: {
+                            BloodSugar: { 
+                                
+                                value: "", 
+                                unit: "mg/dL", 
+                                status: "Normal" },
+
+                            HeartRate: { 
+                                
+                                value: "", 
+                                unit: "bpm", 
+                                status: "Normal" },
+
+                            BloodPressure: { 
+
+                                value: "", 
+                                unit: "mmHg", 
+                                status: "Normal" },
+
+                            BodyTemperature: { 
+
+                                value: "", 
+                                unit: "°F", 
+                                status: "Normal" },
+
+                            RespirotoryRate: {
+
+                                value: "", 
+                                unit: "rpm", 
+                                status: "Normal" }
+                        }
+                    }
+                };
+            }
+
+            //Popup button stuff
+            popupButton = () => {
+                alert("Patient Information Uploaded To Hospital");
+            }
+
+            //power button on the left side
+            swithPower = () => {
+                this.setState({ powerOn: !this.state.powerOn, 
+                                view: 'dashboard' });
+            }
+
+            //add patient info button will bring you to the form page
+            addPatientInfo = () => {
+                this.setState({ view: 'form' });
+            }
+
+             //handling the input change   
+            inputChange = (event) => {
+                const { name, value } = event.target;
+                const nameParts = name.split('.');
+                
+                if (nameParts.length === 1) {
+                    this.setState(prevState => ({
+                        
+                        newPatientsDatas: {
+                            
+                            ...prevState.newPatientsDatas,
+                            [name]: value
+                        }
+                    }));
+
+                } else {
+                    this.setState(prevState => ({
+                        newPatientsDatas: {
+
+                            ...prevState.newPatientsDatas,
+
+                            vitals: {
+
+                                ...prevState.newPatientsDatas.vitals,
+
+                                [nameParts[1]]: {
+
+                                    ...prevState.newPatientsDatas.vitals[nameParts[1]],
+
+                                    value
+                                }
+                            }
+                        }
+                    }));
+                }
+            }
+
+            //handle the submit button function
+            handlingSubmitButton = () => {
+                const { patientData, newPatientsDatas } = this.state;
+                const newPatient = {
+
+                    id: patientData.length + 1, ...newPatientsDatas
+                };
+
+                this.setState(prevState => ({
+                    patientData: [...prevState.patientData, newPatient],
+
+                    selectedPatientId: newPatient.id,
+
+                    view: 'dashboard',
+                    newPatientsDatas: {
+                        name: "",
+                        age: "",
+                        incident: "",
+                        medication: "",
+                        vitals: {
+                           BloodSugar: { 
+                                
+                                value: "", 
+                                unit: "mg/dL", 
+                                status: "Normal" },
+
+                            HeartRate: { 
+                                
+                                value: "", 
+                                unit: "bpm", 
+                                status: "Normal" },
+
+                            BloodPressure: { 
+
+                                value: "", 
+                                unit: "mmHg", 
+                                status: "Normal" },
+
+                            BodyTemperature: { 
+
+                                value: "", 
+                                unit: "°F", 
+                                status: "Normal" },
+
+                            RespirotoryRate: {
+
+                                value: "", 
+                                unit: "rpm", 
+                                status: "Normal" }
+                        }
+                    }
+                }));
+            }
+
+            //handling patient change or new patient info
+            changePatients = (event) => {
+                const selectedId = parseInt(event.target.value);
+                this.setState({ selectedPatientId: selectedId });
+            }
+
+            render() {
+                const { powerOn, button, view, patientData, selectedPatientId, newPatientsDatas } = this.state;
+                const selectedPatient = patientData.find(patient => patient.id === selectedPatientId);
+
+                return (
+                    <div className="container">
+                        <div className="left-side">
+                            <button className={`power-button ${powerOn ? 'on' : ''}`} onClick={this.swithPower} >
+                               
+                                {powerOn ? 'Turn Off' : 'Turn On'}
+
+                            </button>
+                        </div>
+
+                        <div className={`content ${powerOn ? 'visible' : ''}`}>
+                            
+                            {view === 'dashboard' && (
+                                <Dashboard
+
+                                    button={button}
+                                    bigButton={this.popupButton}
+                                    visible={powerOn}
+                                    patientData={patientData}
+                                    selectedPatient={selectedPatient}
+                                    onAddInfo={this.addPatientInfo}
+                                    onPatientChange={this.changePatients}
+
+                                />
+                            )}
+                            {view === 'form' && (
+                                <Form
+
+                                    newPatientsDatas={newPatientsDatas}
+                                    onChange={this.inputChange}
+                                    onSubmit={this.handlingSubmitButton}
+                                    onHome={() => this.setState({ view: 'dashboard' })}
+
+                                />
+                            )}
+                        </div>
+                    </div>
+                );
+            }
+        }
+
+        //add digitalclock function to dipslay real time and date        
+        const { useState, useEffect } = React;
+
+        function DigitalClock() {
+                const [dateTime, setDateTime] = useState(new Date());
+
+                useEffect(() => {
+                    const timer = setInterval(() => {
+                        setDateTime(new Date());
+                    }, 1000);
+                    return () => clearInterval(timer);
+                }, []);
+
+                const formattedTime = dateTime.toLocaleTimeString();
+                const formattedDate = dateTime.toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'numeric',
+                    day: 'numeric'
+                });
+
+                return (
+                    <div>
+                        <div className="time">{formattedTime}</div>
+                        <div className="date">{formattedDate}</div>
+                    </div>
+                );
+        }
+        
+
+        //this is the function for the dashboard where it will display all of the patient info, time, date, dropdown box and add new patient button.
+        function Dashboard({ button, bigButton, visible, patientData, selectedPatient, onAddInfo, onPatientChange }) {
+            return (
+               
+            <div className={`content ${visible ? 'visible' : ''}`}>
+
+                    <div className="header">
+                        <div>
+                            <h2>{selectedPatient.name}</h2>
+                            <p>
+                                Age : {selectedPatient.age} <br />
+                                Gender : {selectedPatient.gender} <br />
+                                Weight : {selectedPatient.weight} <br />  
+                                Height : {selectedPatient.height} <br />
+                                Incident : {selectedPatient.incident} <br /> 
+                                Medication : {selectedPatient.medication} 
+                                
+                            </p>
+
+                        </div>
+
+                            <div className="clock">
+                                
+                                <DigitalClock />
+
+                                <button className="info-button" onClick={bigButton}>Upload Information</button>
+
+                                <button className="info-button" onClick={onAddInfo}> Add Patient </button>
+
+                                <select className="select-patient-dropdown" id= "patient-select" value={selectedPatient.id} onChange={onPatientChange}>
+
+                                    { 
+                                        patientData.map(patient => (
+                                    
+                                        <option key={patient.id} value={patient.id}> {patient.name} 
+                                    
+                                        </option>
+                                    ))}
+
+                                </select>
+                        </div>
+                    </div>
+                    <div className="patient-vital-signss">
+                       
+                        {
+                            Object.entries(selectedPatient.vitals).map(([key, data]) => (
+                           
+                            /*
+                            render each vital sign within a div.
+                            - rses key={key} for React rendering.
+                            - dormats the vital sign name by inserting spaces before capital letterd
+                              and trimming any leading or trailing spaces.
+                            - displays the vital sign's value, unit and status.
+                            */
+                            <div className="patient-vital-signs" key={key}>
+                               
+                                <h3>
+                                    
+                                    {key.replace(/([A-Z])/g, ' $1').trim()}
+                                    
+                                </h3>
+                                
+                                <p>{data.value} {data.unit}</p>
+                            
+                                <span className={`status ${data.status.toLowerCase()}`}>{data.status}</span>
+                                                                    
+                                </div>
+                        ))
+                    
+                    }
+
+                    
+
+                    </div>
+                    <div className="charts">
+
+                        <div className="chart">
+                            {/* plethysmogram chart placeholder */
+                            
+                                <img src="Capture.PNG" alt="chart-image" />
+
+                            }
+                           
+                        </div>
+                        <div className="chart">
+                            {/* eco chart placeholder */
+                                 
+                                    <img src="Capture1.PNG" alt="chart-image" />
+
+                            }
+                            
+                        </div>
+
+                        <div className="chart">
+                            {/* capnogram chart placeholder */
+                                 
+                                    <img src="Capture3.PNG" alt="chart-image" />
+
+                            }
+                            
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        //functionf for the add new patient form page
+        //user can enter all of the new patient information and submit it
+        //remember when using label remmeber to include the for attribute in <label> that 
+        //matches the id of the corresponding <input> field. 
+        //including help browsers understand the type of data expected in each field and 
+        //can assist users by offering appropriate suggestions during form input
+
+        function Form({ newPatientsDatas, onChange, onSubmit, onHome }) {
+            return (
+                <div className="content visible">
+
+                    <div className="info-container">
+                        <h2>Add New Patient Information</h2>
+                        <button className="home-button" onClick={onHome}>
+                            Home
+                        </button>
+                    </div>
+
+                    
+                    <div className="form">
+
+                        <div className="form-group">
+                            <label for = "name"> Name:</label>
+                            <input type = "text" id="name" name="name" autocomplete="name" value={newPatientsDatas.name} onChange={onChange} />
+                        </div>
+
+                        <div className="form-group">
+                            <label for = "age"> Age:</label>
+                            <input type = "text" id="age" name="age" autocomplete="age" value={newPatientsDatas.age} onChange={onChange} />
+                        </div>
+
+                        <div className="form-group">
+                            <label for ="gender"> Gender:</label>
+                            <input type = "text" id="gender" name="gender" autocomplete="gender" value={newPatientsDatas.gender} onChange={onChange} />
+                        </div>
+
+                        <div className="form-group">
+                            <label for = "weight"> Weight:</label>
+                            <input type = "text" id="weight" name="weight" autocomplete="weight" value={newPatientsDatas.weight} onChange={onChange} />
+                        </div>
+
+                        <div className="form-group">
+                            <label for= "height"> Height:</label>
+                            <input type = "text" id="height" name="height" autocomplete="height" value={newPatientsDatas.height} onChange={onChange} />
+                        </div>
+
+                        <div className="form-group">
+                            <label for ="incident"> Incident:</label>
+                            <input type = "text" id="incident" name="incident" autocomplete="incident" value={newPatientsDatas.incident} onChange={onChange} />
+                        </div>
+
+                        <div className="form-group">
+                            <label for = "medication"> Medication:</label>
+                            <input type = "text" id="medication" name="medication" autocomplete="medication" value={newPatientsDatas.medication} onChange={onChange} />
+                        </div>
+
+                        <div className="form-group">
+                            <label for = "blood sugar"> Blood Sugar:</label>
+                            <input type = "text" id="blood sugar" name="vitals.BloodSugar.value" autocomplete="blood sugar" value={newPatientsDatas.vitals.BloodSugar.value} onChange={onChange} />
+                        </div>
+
+                        <div className="form-group">
+                            <label for = "heart rate"> Heart Rate:</label>
+                            <input type = "text" id="heart rate" name="vitals.HeartRate.value" autocomplete="heat rate" value={newPatientsDatas.vitals.HeartRate.value} onChange={onChange} />
+                        </div>
+
+                        <div className="form-group">
+                            <label for = "blood pressure"> Blood Pressure:</label>
+                            <input type = "text" id="blood pressure" name="vitals.BloodPressure.value" autocomplete="blood pressure" value={newPatientsDatas.vitals.BloodPressure.value} onChange={onChange} />
+                        </div>
+
+                        <div className="form-group">
+                            <label for = "body temperature"> Body Temperature:</label>
+                            <input type = "text" id="body temperature" name="vitals.BodyTemperature.value" autocomplete="body temperature" value={newPatientsDatas.vitals.BodyTemperature.value} onChange={onChange} />
+                        </div>
+
+                        <div className="form-group">
+                            <label for = "respirotory rate"> Respirotory Rate:</label>
+                            <input type = "text" id="respirotory rate" name="vitals.RespirotoryRate.value" autocomplete="respirotory rate" value={newPatientsDatas.vitals.RespirotoryRate.value} onChange={onChange} />
+                        </div>
+                        
+                        <button className="submit-button" onClick={onSubmit}>
+                            Submit
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        const container = document.getElementById("root");
+        const root = ReactDOM.createRoot(container);
+        root.render(<App />);
+       
+    </script>
+</body>
+</html>
